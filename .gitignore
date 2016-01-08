@@ -1,0 +1,23 @@
+build
+.idea/
+target/*
+project/project/target
+project/target
+*.iml
+*.iws
+*.ipr
+reports
+# Eclipse files
+.project
+.classpath
+.cache
+bin
+.bundle
+.gradle
+out
+*/target/*
+*/.idea/*
+*/build/*
+.DS_Store
+integration-suite/data/jenkins.counter
+/build/

@@ -1,0 +1,85 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        maven { url "https://repository.cloudera.com/artifactory/cloudera-repos" }
+        maven { url "http://clojars.org/repo" }
+        maven { url "https://plugins.gradle.org/m2/" }
+    }
+    dependencies {
+        classpath 'org.apache.maven:maven-artifact:2.2.1'
+        classpath "org.apache.avro:avro-compiler:${avroVersion}"
+        classpath 'org.clojars.miguno:avro-gradle-plugin:1.7.6'
+        classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.0'
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'avro-gradle-plugin'
+apply plugin: 'com.github.johnrengelman.shadow'
+
+sourceCompatibility = "${javaVersionCompliance}"
+targetCompatibility = "${javaVersionCompliance}"
+
+project.version = "${versionProject}"
+mainClassName = "org.matruss.waterfall.Niagara"
+
+
+configurations.all {
+  resolutionStrategy {
+    force "com.google.guava:guava:14.0.1"
+    }
+}
+
+configurations {
+    provided
+    compile.extendsFrom provided
+}
+
+dependencies {
+    compile project(':common')
+
+    compile "com.collective:riemann-scalding-lib_${scaldingMajorVersion}:1.0-${cdhVersion}"
+    compile "org.apache.hadoop:hadoop-client:${hadoopVersion}"
+    runtime("org.apache.hadoop:hadoop-client:${hadoopVersion}")
+
+
+    compile("com.twitter:scalding-core_${scalaLibVersion}:${scaldingVersion}")
+    compile("com.twitter:scalding-commons_${scalaLibVersion}:${scaldingVersion}")
+    compile("com.twitter:scalding-avro_${scalaLibVersion}:${scaldingVersion}")
+    compile("joda-time:joda-time:2.1")
+    compile("org.joda:joda-convert:1.1")
+
+    testCompile("junit:junit:${junitVersion}")
+    testCompile("org.specs2:specs2_${scalaVersionNoBuild}:${specsVersion}")
+    compileAvro
+}
+
+compileAvro {
+    source = 'src/main/resources'
+    destinationDir = file("$buildDir/generated-sources/avro")
+}
+
+sourceSets {
+    main { java { srcDir compileAvro.destinationDir } }
+}
+
+jar {
+    zip64 = true
+    // If you let all the META-INF/ stuff from the dependency jars in it clobbers our own manifest, among other things
+    // and generally makes things not work
+    from { (configurations.compile - configurations.provided).collect { it.isDirectory() ? it : zipTree(it).matching { exclude 'META-INF/**' } } }
+    manifest {
+        attributes("Main-Class" : mainClassName)
+    }
+}
+
+shadowJar {
+  baseName = project.name
+  classifier = ''
+  relocate 'cascading', 'newcascading'
+  //exclude jars
+  dependencies {
+    exclude 'META-INF/**'
+  }
+}
+

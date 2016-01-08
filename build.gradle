@@ -1,0 +1,64 @@
+allprojects {
+    apply plugin: 'scala'
+    apply plugin: 'application'
+    apply plugin: 'idea'
+
+    project.group = 'org.matruss'
+
+    ext {
+        versionProject = '0.1'
+
+        javaVersionCompliance = '1.8'
+
+        scalaVersion = '2.10.4'
+        scalaVersionNoBuild = '2.10'
+        scalaLibVersion = '2.10'
+        
+        cdhVersion = 'cdh5.4.2'
+        hadoopVersion = "2.6.0-${cdhVersion}"
+        avroVersion = "1.7.6-${cdhVersion}"
+
+        jerksonVersion = '0.6.1'
+        scoptVersion = '3.2.0'
+        scaldingVersion = '0.12.0'
+        scaldingMajorVersion = '0.12'
+
+
+        junitVersion = '4.11'
+        specsVersion = '2.3.12'
+
+    }
+
+    repositories {
+        mavenCentral()
+        maven { url "http://oss.sonatype.org/content/repositories/releases" }
+        maven { url "http://conjars.org/repo" }
+        maven { url "http://clojars.org/repo" }
+        maven { url "https://repository.cloudera.com/artifactory/cloudera-repos" }
+        maven { url "http://repo.codahale.com/" }
+        maven { url "http://people.apache.org/~rawson/repo/" }
+        maven { url "http://www.ibiblio.org/maven2/" }
+        maven { url "http://maven.twttr.com/" }
+        maven { url "http://repo.typesafe.com/typesafe/releases/" }
+    }
+    task wrapper(type: Wrapper) {
+        gradleVersion = '2.2.1'
+    }
+    configurations {
+        scalalib
+        compile.extendsFrom scalalib
+    }
+    dependencies {
+        scalalib("org.scala-lang:scala-library:${scalaVersion}")
+    }
+    tasks.withType(ScalaCompile) {
+        scalaCompileOptions.useCompileDaemon = false
+        scalaCompileOptions.fork = true
+        scalaCompileOptions.forkOptions.jvmArgs = ['-XX:MaxPermSize=512m']
+    }
+    test {
+        maxHeapSize '2048m'
+        jvmArgs "-XX:MaxPermSize=1024m"
+    }
+}
+

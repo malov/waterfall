@@ -1,0 +1,32 @@
+apply plugin: 'java'
+apply plugin: 'maven'
+
+ext {
+        versionProject = '0.1'
+}
+
+sourceCompatibility = "${javaVersionCompliance}"
+targetCompatibility = "${javaVersionCompliance}"
+
+project.version = "${versionProject}"
+
+configurations {
+    provided
+    compile.extendsFrom provided
+}
+
+dependencies {
+    provided("org.apache.hadoop:hadoop-client:${hadoopVersion}")
+
+    compile("com.cloudphysics:jerkson_${scalaLibVersion}:${jerksonVersion}")
+
+    testRuntime("com.cloudphysics:jerkson_${scalaLibVersion}:${jerksonVersion}")
+    testCompile("junit:junit:${junitVersion}")
+    testCompile("org.specs2:specs2_${scalaVersionNoBuild}:${specsVersion}")
+}
+
+test {
+    minHeapSize = "1G"
+    maxHeapSize = "4G"
+}
+
